@@ -1,0 +1,27 @@
+{
+  "name": "swagger-github",
+  "version": "1.0.0",
+  "description": "swagger document from github swagger documents",
+  "main": "swagger-github",
+  "scripts": {
+    "start": "swagger-github"
+  },
+  "bin": {
+    "swagger-github": "swagger-github"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sdavis-r7/swagger-github.git"
+  },
+  "keywords": [
+    "swagger",
+    "github"
+  ],
+  "author": "Scott Lee Davis <scott_davis@rapid7.com>",
+  "license": "MIT",
+  "dependencies": {
+    "github": "^0.2.4",
+    "sleep": "^3.0.1"
+  },
+  "preferGlobal": true
+}

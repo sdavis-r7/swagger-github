@@ -1,0 +1,133 @@
+#! /usr/bin/env node
+
+var sleep = require('sleep').usleep,
+  GitHubApi = require("github"),
+  github = new GitHubApi({
+    version: "3.0.0",
+    debug: false,
+    protocol: "https",
+    host: "api.github.com",
+    timeout: 5000,
+    headers: {
+      "user-agent": "swagger-github"
+    }
+  }),
+  default_repo_search_query = process.env.REPO_QUERY ? process.env.REPO_QUERY : "user:rapid7",
+  default_repo_search = {
+    q: default_repo_search_query,
+    per_page: "100",
+    page: 1
+  },
+  default_swagger_code_query = process.env.SWAGGER_QUERY ? process.env.SWAGGER_QUERY + " " : "swagger in:path extension:json ",
+  max_results_allowed = 1000, //github specified
+  inter_request_delay = 2000, //millis
+  inter_request_sleep = inter_request_delay * 1000, //micros
+  repo_chunk_size = 30,
+  popular_repos = [],
+  total_repos = -1,
+  count = 0,
+  done_count = 0,
+  swagger_doc = {
+    "swagger": "2.0",
+    "info": {
+      "description": "github api documents with queries repo:("+default_repo_search_query+") code:("+default_repo_search_query+")",
+      "version": "0.0.1",
+      "title": "github swagger document of github swagger documents"
+    },
+    "schemes": [
+      "https"
+    ],
+    "host": "raw.github.com",
+    "basePath": "/",
+    "definitions": {},
+    "produces": [
+      "application/json"
+    ],
+    paths: {}
+  },
+  swagger_base_path = swagger_doc.schemes[0] + "://" + swagger_doc.host + swagger_doc.basePath;
+
+function storeRepo(err, res) {
+
+  if (err) {
+    console.error(err);
+    return;
+  }
+
+  if (total_repos < 0) {
+    total_repos = res.total_count;
+    // console.log("repos w/filter (" + default_repo_search.q + ") total_count=" + total_repos);
+  }
+
+  res.items.forEach(i => {
+    popular_repos.push("repo:" + i.full_name);
+  });
+
+  if (popular_repos.length < total_repos || popular_repos >= max_results_allowed) {
+    default_repo_search.page += 1;
+    setTimeout(function() {
+      github.search.repos(default_repo_search, storeRepo);
+    }, inter_request_delay);
+  } else {
+    // console.log(popular_repos)
+    queryRepos(popular_repos);
+  }
+
+}
+
+function codeQuery(repos, idx) {
+  // console.log('codeQuery');
+  sleep(inter_request_sleep);
+  github.search.code({
+    q: default_swagger_code_query + repos.join(" ")
+  }, function(err, res) {
+    done_count++;
+    if (err) {
+      console.error(err);
+      return;
+    } else {
+      // console.log("code w/filter (" + default_swagger_code_query + "repos:["+repos.length+"]) found=" + res.total_count);
+      if (res.total_count > 0) {
+        // console.log("code w/filter (" + default_swagger_code_query + repos.join(" ") + ") total_count=" + res.total_count);
+        res.items.forEach(i => {
+          // var swagger_url = swagger_base_path + i.repository.full_name + i.html_url.split("/blob")[1];
+          var path_url = "/" + i.repository.full_name + i.html_url.split("/blob")[1];
+          swagger_doc.paths[path_url] = {
+            "get": {
+              "description": "Swagger document found in " + i.repository.html_url,
+              "responses" : {
+                "200": {
+                  "description": "successful operation"
+                }
+              }
+            }
+          }
+          if (done_count >= count) {
+            // console.log('we are done!');
+            console.log(JSON.stringify(swagger_doc,null,2));
+          }
+        });
+      }
+    }
+  });
+}
+
+function queryRepos(repos) {
+  // console.log('queryRepos');
+  var i, j, t, chunk = repo_chunk_size;
+  count = Math.floor(repos.length / chunk);
+  for (i = 0, j = repos.length; i < j; i += chunk) {
+    var tt = repos.slice(i, i + chunk);
+    codeQuery(tt);
+  }
+}
+
+if (process.env.GITHUB_TOKEN) {
+  console.log(authenticated!)
+  github.authenticate({
+    type: "oauth",
+    token: process.env.GITHUB_TOKEN
+  });
+}
+
+github.search.repos(default_repo_search, storeRepo);
