@@ -1,4 +1,7 @@
 #swagger-github
+[![npm version](https://badge.fury.io/js/swagger-github.svg)](http://badge.fury.io/js/swagger-github)
+[![Packagist](https://img.shields.io/packagist/l/doctrine/orm.svg)](https://www.npmjs.com/package/swagger-github)
+
 
 ![screenshot](screenshot.png)
 
