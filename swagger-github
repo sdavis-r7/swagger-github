@@ -30,7 +30,7 @@ var sleep = require('sleep').usleep,
   swagger_doc = {
     "swagger": "2.0",
     "info": {
-      "description": "github api documents with queries repo:("+default_repo_search_query+") code:("+default_repo_search_query+")",
+      "description": "github api documents with queries repo:("+default_repo_search_query+") code:("+default_swagger_code_query+")",
       "version": "0.0.1",
       "title": "github swagger document of github swagger documents"
     },

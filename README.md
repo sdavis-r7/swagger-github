@@ -53,7 +53,7 @@ Default run ```swagger-github``` produces
 {
   "swagger": "2.0",
   "info": {
-    "description": "github api documents with queries repo:(user:rapid7) code:(user:rapid7)",
+    "description": "github api documents with queries repo:(user:rapid7) code:(swagger in:path extension:json)",
     "version": "0.0.1",
     "title": "github swagger document of github swagger documents"
   },
