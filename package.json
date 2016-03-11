@@ -1,6 +1,6 @@
 {
   "name": "swagger-github",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "swagger document from github swagger documents",
   "main": "swagger-github",
   "scripts": {
